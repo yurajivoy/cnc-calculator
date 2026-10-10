@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNC Machining Calculator | SCM Morbidelli N100</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen py-8 px-4">
+    <div class="max-w-4xl mx-auto space-y-6">
+        
+        <!-- Шапка -->
+        <header class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <div class="flex items-center gap-2 text-amber-400 font-semibold text-sm mb-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    <span>SCM Morbidelli N100 Profile</span>
+                </div>
+                <h1 class="text-2xl font-bold tracking-tight text-white">Калькулятор режимов резания</h1>
+                <p class="text-slate-400 text-sm">Прямые трехзубые фрезы ($z=3$) • Дерево, МДФ, Фанера</p>
+            </div>
+            <div class="bg-amber-500/10 border border-amber-500/20 px-4 py-2 rounded-xl text-amber-300 text-xs font-medium">
+                ⚡ Промышленный режим HSM
+            </div>
+        </header>
+
+        <!-- Основные результаты -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+                <div class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Минутная подача (F)</div>
+                <div id="res-feed" class="text-3xl font-extrabold text-amber-400">0 <span class="text-sm font-normal text-slate-400">мм/мин</span></div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+                <div class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Обороты шпинделя (RPM)</div>
+                <div id="res-rpm" class="text-3xl font-extrabold text-white">0 <span class="text-sm font-normal text-slate-400">об/мин</span></div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+                <div class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Стратегия проходов</div>
+                <div id="res-passes" class="text-2xl font-bold text-sky-400">0 проходов</div>
+                <div id="res-depth-pass" class="text-xs text-slate-400 mt-1">0 мм / проход</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
+                <div class="text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Подача на зуб ($f_z$)</div>
+                <div id="res-fz" class="text-3xl font-extrabold text-emerald-400">0 <span class="text-sm font-normal text-slate-400">мм/зуб</span></div>
+            </div>
+        </div>
+
+        <!-- Панель управления / Параметры -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+            <h2 class="text-lg font-semibold text-white border-b border-slate-800 pb-3">Параметры обработки</h2>
+
+            <!-- Материал -->
+            <div class="space-y-2">
+                Обрабатываемый материал
+                <select id="material" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 focus:outline-none focus:border-amber-500 transition-colors">
+                    <option value="plywood">Фанера (высокая абразивность)</option>
+                    <option value="mdf">МДФ (высокая нагрузка)</option>
+                    <option value="pine">Сосна / Мягкие породы</option>
+                    <option value="walnut">Африканский орех</option>
+                    <option value="oak">Дуб / Твердые породы</option>
+                </select>
+            </div>
+
+            <!-- Диаметр фрезы -->
+            <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-300">Диаметр фрезы (D)</span>
+                    <span id="val-diam" class="font-bold text-amber-400">8 мм</span>
+                </div>
+                <input type="range" id="diam" min="3" max="12" step="1" value="8" class="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+            </div>
+
+            <!-- Толщина заготовки -->
+            <div class="space-y-2">
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-300">Толщина заготовки (H)</span>
+                    <span id="val-thick" class="font-bold text-amber-400">16 мм</span>
+                </div>
+                <input type="range" id="thick" min="6" max="50" step="1" value="16" class="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        const materialsData = {
+            plywood: { name: "Фанера", rpm: 18000, fzBase: 0.09, depthFactor: 0.8 },
+            mdf:     { name: "МДФ",     rpm: 18000, fzBase: 0.10, depthFactor: 1.0 },
+            pine:    { name: "Сосна",   rpm: 20000, fzBase: 0.12, depthFactor: 1.2 },
+            walnut:  { name: "Орех",    rpm: 17000, fzBase: 0.08, depthFactor: 0.7 },
+            oak:     { name: "Дуб",     rpm: 16000, fzBase: 0.06, depthFactor: 0.5 }
+        };
+
+        const diamInput = document.getElementById('diam');
+        const thickInput = document.getElementById('thick');
+        const materialSelect = document.getElementById('material');
+
+        const valDiam = document.getElementById('val-diam');
+        const valThick = document.getElementById('val-thick');
+
+        const resFeed = document.getElementById('res-feed');
+        const resRpm = document.getElementById('res-rpm');
+        const resPasses = document.getElementById('res-passes');
+        const resDepthPass = document.getElementById('res-depth-pass');
+        const resFz = document.getElementById('res-fz');
+
+        function calculate() {
+            const d = parseFloat(diamInput.value);
+            const t = parseFloat(thickInput.value);
+            const matKey = materialSelect.value;
+            const mat = materialsData[matKey];
+
+            valDiam.innerText = d + ' мм';
+            valThick.innerText = t + ' мм';
+
+            // Коррекция подачи на зуб в зависимости от диаметра фрезы (тонкие фрезы требуют меньшей нагрузки)
+            let fz = mat.fzBase * (d / 8); 
+            fz = Math.max(0.03, Math.min(0.15, fz));
+
+            // Обороты шпинделя (3 зуба, z = 3)
+            const rpm = mat.rpm;
+            const feed = Math.round(rpm * 3 * fz);
+
+            // Расчет глубины за проход
+            let maxAp = d * mat.depthFactor;
+            maxAp = Math.max(2, Math.min(maxAp, t));
+            
+            const passes = Math.ceil(t / maxAp);
+            const actualAp = (t / passes).toFixed(2);
+
+            // Вывод результатов
+            resFeed.innerHTML = `${feed.toLocaleString()} <span class="text-sm font-normal text-slate-400">мм/мин</span>`;
+            resRpm.innerHTML = `${rpm.toLocaleString()} <span class="text-sm font-normal text-slate-400">об/мин</span>`;
+            resPasses.innerText = `${passes} ${passes === 1 ? 'проход' : passes < 5 ? 'прохода' : 'проходов'}`;
+            resDepthPass.innerText = `${actualAp} мм / проход (макс. ${maxAp.toFixed(1)} мм)`;
+            resFz.innerHTML = `${fz.toFixed(3)} <span class="text-sm font-normal text-slate-400">мм/зуб</span>`;
+        }
+
+        diamInput.addEventListener('input', calculate);
+        thickInput.addEventListener('input', calculate);
+        materialSelect.addEventListener('change', calculate);
+
+        calculate();
+    </script>
+</body>
+</html>
